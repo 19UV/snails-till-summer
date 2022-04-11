@@ -2,7 +2,7 @@
   <div class="container">
     <div :class="counting_down ? 'digit-container' : 'digit-container-large'">
       <div :class="counting_down ? 'digit' : 'digit-large'">{{ days }}</div>
-      <div class="label">Days</div>
+      <div class="label">{{ days == 1 ? "Day" : "Days" }}</div>
     </div>
     <div class="digit-container" v-if="counting_down">
       <div class="digit">{{ hours }}</div>
@@ -76,7 +76,7 @@ function during_school_day(current: Date): boolean {
     }
   }
   if (SCHOOL_YEAR_END.getHours() == current.getHours()) {
-    if (current.getMinutes() > SCHOOL_YEAR_END.getMinutes()) {
+    if (current.getMinutes() >= SCHOOL_YEAR_END.getMinutes()) {
       return false;
     }
   }
@@ -102,7 +102,6 @@ function time_until_end_of_day(
     let difference = Math.floor(
       (end_of_day.getTime() - current.getTime()) / 1000
     );
-    console.log(difference);
 
     remaining.hours += Math.floor(difference / (60 * 60));
     difference -= remaining.hours * 60 * 60;
@@ -121,18 +120,25 @@ function time_remaining(current: Date): TimeRemaining {
 
   let remaining: TimeRemaining = { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
-  const end_of_day = new Date(
-    current.getFullYear(),
-    current.getMonth(),
-    current.getDate(),
-    SCHOOL_YEAR_END.getHours(),
-    SCHOOL_YEAR_END.getMinutes(),
-    SCHOOL_YEAR_END.getSeconds()
-  );
+  const start_of_day = new Date(
+      current.getFullYear(),
+      current.getMonth(),
+      current.getDate(),
+      SCHOOL_YEAR_START.getHours(),
+      SCHOOL_YEAR_START.getMinutes(),
+      SCHOOL_YEAR_START.getSeconds()
+    ),
+    end_of_day = new Date(
+      current.getFullYear(),
+      current.getMonth(),
+      current.getDate(),
+      SCHOOL_YEAR_END.getHours(),
+      SCHOOL_YEAR_END.getMinutes(),
+      SCHOOL_YEAR_END.getSeconds()
+    );
 
   if (is_school_day(current)) {
     time_until_end_of_day(remaining, current, end_of_day);
-    console.log(end_of_day, remaining);
   }
 
   const days_until_school_end = Math.ceil(
@@ -144,6 +150,10 @@ function time_remaining(current: Date): TimeRemaining {
     if (is_school_day(check_date)) {
       remaining.days++;
     }
+  }
+
+  if (start_of_day.getTime() > current.getTime()) {
+    remaining.days++;
   }
 
   return remaining;
@@ -173,14 +183,12 @@ export default class Countdown extends Vue {
     const current_date = new Date();
     this.counting_down = during_school_day(current_date);
 
-    if (this.counting_down) {
-      ({
-        days: this.days,
-        hours: this.hours,
-        minutes: this.minutes,
-        seconds: this.seconds,
-      } = time_remaining(current_date));
-    }
+    ({
+      days: this.days,
+      hours: this.hours,
+      minutes: this.minutes,
+      seconds: this.seconds,
+    } = time_remaining(current_date));
   }
 }
 </script>
