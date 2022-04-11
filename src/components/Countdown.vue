@@ -59,11 +59,10 @@ function during_school_year(current: Date): boolean {
 }
 
 function during_school_day(current: Date): boolean {
-  console.log(
-    SCHOOL_YEAR_START.getHours(),
-    current.getHours(),
-    SCHOOL_YEAR_END.getHours()
-  );
+  if (!is_school_day(current)) {
+    return false;
+  }
+
   if (
     SCHOOL_YEAR_START.getHours() > current.getHours() ||
     current.getHours() > SCHOOL_YEAR_END.getHours()
@@ -80,10 +79,6 @@ function during_school_day(current: Date): boolean {
     if (current.getMinutes() > SCHOOL_YEAR_END.getMinutes()) {
       return false;
     }
-  }
-
-  if (no_school.includes(current.getMonth() + ";" + current.getDate())) {
-    return false;
   }
 
   return true;
@@ -176,14 +171,15 @@ export default class Countdown extends Vue {
 
   update_time() {
     const current_date = new Date();
-    this.counting_down = is_school_day(current_date);
+    this.counting_down = during_school_day(current_date);
 
     if (this.counting_down) {
-      let { days, hours, minutes, seconds } = time_remaining(current_date);
-      this.days = days;
-      this.hours = hours;
-      this.minutes = minutes;
-      this.seconds = seconds;
+      ({
+        days: this.days,
+        hours: this.hours,
+        minutes: this.minutes,
+        seconds: this.seconds,
+      } = time_remaining(current_date));
     }
   }
 }
