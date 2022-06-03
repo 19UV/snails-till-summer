@@ -42,7 +42,7 @@ const SCHOOL_YEAR_END = new Date(
   2022,
   parseInt(last_day.split(";")[0]),
   parseInt(last_day.split(";")[1]),
-  15,
+  11,
   40
 );
 
